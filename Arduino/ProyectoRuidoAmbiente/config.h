@@ -8,7 +8,7 @@
 #define WIFI_PASSWORD ""   // Put here your Wi-Fi password
 
 /* MQTT config */
-#define MQTT_PUBLISH_FREQUENCY   500              // MQTT publish rate in milliseconds
+#define MQTT_PUBLISH_FREQUENCY   1000             // MQTT publish rate in milliseconds
 #define MQTT_CLIENT_NAME        "mqttx_d85bc32b"  // MQTT client name
 #define MQTT_VARIABLE_LABEL     "db"              // MQTT variable label
 

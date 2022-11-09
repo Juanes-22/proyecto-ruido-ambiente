@@ -48,7 +48,7 @@ void setup()
 
   SerialMonitorInterface.begin(115200);
   WiFi.setPins(8, 2, A3, -1); // very important for Tinyduino
-  while(!SerialMonitorInterface);
+  //while(!SerialMonitorInterface);
 
   connectToWiFi(WIFI_SSID, WIFI_PASSWORD); // WiFi Connection
 
