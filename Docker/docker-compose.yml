@@ -1,0 +1,113 @@
+version: '3.6'
+
+networks:
+  usernet:
+    name: usernet
+    driver: bridge
+    ipam:
+      driver: default
+
+services:
+  portainer-ce:
+    container_name: portainer-ce
+    image: portainer/portainer-ce
+    restart: always
+    ports:
+    - "9000:9000"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./volumes/portainer-ce/data:/data
+    networks:
+      usernet:
+        aliases:
+          - portainer_host
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    restart: always
+    user: "0"
+    ports:
+    - "3030:3000"
+    environment:
+    - TZ=Etc/UTC
+    - GF_PATHS_DATA=/var/lib/grafana
+    - GF_PATHS_LOGS=/var/log/grafana
+    volumes:
+    - ./volumes/grafana/data:/var/lib/grafana
+    - ./volumes/grafana/log:/var/log/grafana
+    - ./volumes/grafana/plugins:/var/lib/grafana/plugins
+    healthcheck:
+      test: ["CMD", "wget", "-O", "/dev/null", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 50s
+    networks:
+      usernet:
+        aliases:
+          - grafana_host
+
+  mosquitto:
+    container_name: arm32v7-mosquitto
+    image: mbixtech/arm32v7-mosquitto:latest
+    restart: always
+    environment:
+    - TZ=Etc/UTC
+    ports:
+    - "1883:1883"
+    volumes:
+    - ./volumes/mosquitto/config:/mosquitto/config
+    - ./volumes/mosquitto/data:/mosquitto/data
+    - ./volumes/mosquitto/log:/mosquitto/log
+    networks:
+      usernet:
+        aliases:
+          - mosquitto_host
+
+  nodered:
+    container_name: nodered
+    image: nodered/node-red:latest
+    restart: always
+    user: "0"
+    environment:
+    - TZ=Etc/UTC
+    ports:
+    - "2880:1880"
+    volumes:
+    - ./volumes/nodered/data:/data
+    networks:
+      usernet:
+        aliases:
+          - nodered_host
+
+  influxdb:
+    container_name: influxdb
+    image: "influxdb:1.8"
+    restart: always
+    ports:
+    - "8086:8086"
+    environment:
+    - TZ=Etc/UTC
+    - INFLUXDB_HTTP_FLUX_ENABLED=false
+    - INFLUXDB_REPORTING_DISABLED=false
+    - INFLUXDB_HTTP_AUTH_ENABLED=false
+    - INFLUXDB_MONITOR_STORE_ENABLED=FALSE
+  # - INFLUX_USERNAME=dba
+  # - INFLUX_PASSWORD=supremo
+  # - INFLUXDB_UDP_ENABLED=false
+  # - INFLUXDB_UDP_BIND_ADDRESS=0.0.0.0:8086
+  # - INFLUXDB_UDP_DATABASE=udp
+    volumes:
+    - ./volumes/influxdb/data:/var/lib/influxdb
+    - ./backups/influxdb/db:/var/lib/influxdb/backup
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8086"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      usernet:
+        aliases:
+          - influxdb_host
